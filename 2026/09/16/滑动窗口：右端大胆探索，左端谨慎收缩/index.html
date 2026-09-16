@@ -1,0 +1,911 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>滑动窗口：右端大胆探索，左端谨慎收缩 | Edward 的博客</title><meta name="author" content="Edward Wang"><meta name="copyright" content="Edward Wang"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="前言 滑动窗口（Sliding Window）是一种用于处理数组、字符串等线性结构上连续子区间问题的算法思想。它通过维护一个可以伸缩的区间 [left, right]，在保证区间始终满足某种约束的前提下，将原本需要 O(n2)O(n^2)O(n2) 或 O(n3)O(n^3)O(n3) 的暴力枚举优化到 O(n)O(n)O(n)。 这个区间之所以说“会呼吸”，是因为它右端不断向外探索，左端则根据约">
+<meta property="og:type" content="article">
+<meta property="og:title" content="滑动窗口：右端大胆探索，左端谨慎收缩">
+<meta property="og:url" content="https://edwardlwang.github.io/2026/09/16/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%9A%E5%8F%B3%E7%AB%AF%E5%A4%A7%E8%83%86%E6%8E%A2%E7%B4%A2%EF%BC%8C%E5%B7%A6%E7%AB%AF%E8%B0%A8%E6%85%8E%E6%94%B6%E7%BC%A9/index.html">
+<meta property="og:site_name" content="Edward 的博客">
+<meta property="og:description" content="前言 滑动窗口（Sliding Window）是一种用于处理数组、字符串等线性结构上连续子区间问题的算法思想。它通过维护一个可以伸缩的区间 [left, right]，在保证区间始终满足某种约束的前提下，将原本需要 O(n2)O(n^2)O(n2) 或 O(n3)O(n^3)O(n3) 的暴力枚举优化到 O(n)O(n)O(n)。 这个区间之所以说“会呼吸”，是因为它右端不断向外探索，左端则根据约">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://edwardlwang.github.io/img/GBC8.jpg">
+<meta property="article:published_time" content="2026-09-16T09:32:19.000Z">
+<meta property="article:modified_time" content="2026-09-16T09:33:33.164Z">
+<meta property="article:author" content="Edward Wang">
+<meta property="article:tag" content="Sliding Window">
+<meta property="article:tag" content="滑动窗口">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://edwardlwang.github.io/img/GBC8.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "滑动窗口：右端大胆探索，左端谨慎收缩",
+  "url": "https://edwardlwang.github.io/2026/09/16/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%9A%E5%8F%B3%E7%AB%AF%E5%A4%A7%E8%83%86%E6%8E%A2%E7%B4%A2%EF%BC%8C%E5%B7%A6%E7%AB%AF%E8%B0%A8%E6%85%8E%E6%94%B6%E7%BC%A9/",
+  "image": "https://edwardlwang.github.io/img/GBC8.jpg",
+  "datePublished": "2026-09-16T09:32:19.000Z",
+  "dateModified": "2026-09-16T09:33:33.164Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Edward Wang",
+      "url": "https://edwardlwang.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/blog.ico"><link rel="canonical" href="https://edwardlwang.github.io/2026/09/16/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%9A%E5%8F%B3%E7%AB%AF%E5%A4%A7%E8%83%86%E6%8E%A2%E7%B4%A2%EF%BC%8C%E5%B7%A6%E7%AB%AF%E8%B0%A8%E6%85%8E%E6%94%B6%E7%BC%A9/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.clarity.ms"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', 'ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const start = 9
+              const end = 19
+              const isNight =
+                start < end
+                    ? hour < start || hour >= end
+                    : hour >= start || hour < end
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "v1deo36omf");
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: true,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '滑动窗口：右端大胆探索，左端谨慎收缩',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div class="bg-animation" id="web_bg" style="background-image: url(/img/GBC2.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/Awa%20Subaru.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">12</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-file-alt"></i><span> 页面</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-couch"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书籍</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/GBC8.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/Blog.png" alt="Logo"><span class="site-name">Edward 的博客</span></a><a class="nav-page-title" href="/"><span class="site-name">滑动窗口：右端大胆探索，左端谨慎收缩</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-file-alt"></i><span> 页面</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-couch"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书籍</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">滑动窗口：右端大胆探索，左端谨慎收缩</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-16T09:32:19.000Z" title="发表于 2026-09-16 17:32:19">2026-09-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-16T09:33:33.164Z" title="更新于 2026-09-16 17:33:33">2026-09-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Algorithms/">Algorithms</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>14分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前言">前言</h2>
+<p>滑动窗口（Sliding Window）是一种用于处理<strong>数组、字符串等线性结构上连续子区间问题</strong>的算法思想。它通过维护一个可以伸缩的区间 <code>[left, right]</code>，在保证区间始终满足某种约束的前提下，将原本需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><msup><mi>n</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">n</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span> 或 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><msup><mi>n</mi><mn>3</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n^3)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">n</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span> 的暴力枚举优化到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span>。</p>
+<p>这个区间之所以说“会呼吸”，是因为它右端不断向外探索，左端则根据约束谨慎收缩——一伸一缩之间，恰好扫过所有可能的候选区间，且两端从不后退。</p>
+<p>滑动窗口的本质是<strong>双指针（Two Pointers）的一种特化形式</strong>：两个指针同向移动，共同维护一个区间。相比动态规划和贪心，滑动窗口的适用场景更具体，但一旦识别出来，代码往往短小精悍，且时间效率极高。</p>
+<p>本文系统梳理滑动窗口的适用条件、通用模板、经典题型与常见陷阱，代码示例统一使用 C++17。</p>
+<hr>
+<h2 id="一、什么是滑动窗口">一、什么是滑动窗口</h2>
+<p>滑动窗口算法维护两个指针 <code>left</code> 和 <code>right</code>，表示当前考察的连续子区间 <code>[left, right]</code>。算法的一般流程如下：</p>
+<ol>
+<li>初始化 <code>left = right = 0</code>，窗口为空。</li>
+<li>不断右移 <code>right</code>，将新元素纳入窗口，并更新窗口的统计信息。</li>
+<li>当窗口<strong>不满足约束</strong>时，不断右移 <code>left</code>，缩小窗口直到再次满足约束。</li>
+<li>在每次窗口合法的时刻记录答案。</li>
+<li>重复步骤 2–4，直到 <code>right</code> 到达数组末尾。</li>
+</ol>
+<p>关键在于：<strong><code>left</code> 和 <code>right</code> 都只增不减</strong>，因此每个元素最多被访问常数次，总复杂度为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span>。</p>
+<p><strong>最简示例：求长度为 k 的子数组最大和</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">maxSumOfK</span><span class="params">(<span class="type">const</span> vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">    <span class="type">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; k; ++i) sum += nums[i];</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> best = sum;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = k; i &lt; n; ++i) &#123;</span><br><span class="line">        sum += nums[i] - nums[i - k];   <span class="comment">// 右进左出</span></span><br><span class="line">        best = <span class="built_in">max</span>(best, sum);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> best;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></p>
+<hr>
+<h2 id="二、滑动窗口的适用条件">二、滑动窗口的适用条件</h2>
+<p>滑动窗口并非万能，它仅适用于满足以下条件的问题：</p>
+<h3 id="1-求解对象是连续子区间">1. 求解对象是连续子区间</h3>
+<p>问题要求的是<strong>数组或字符串上的一段连续区间</strong>（子数组、子串），而非子序列。</p>
+<h3 id="2-窗口的合法性具有单调性">2. 窗口的合法性具有单调性</h3>
+<p>随着 <code>right</code> 右移，窗口的“违规程度”单调递增；随着 <code>left</code> 右移，窗口的“违规程度”单调递减。这种单调性是窗口能够单向收缩的前提。</p>
+<p>例如，“窗口内元素之和 ≤ S”、“窗口内不包含重复字符”这类约束天然满足单调性；而“窗口内元素之和恰好等于 S”这类约束则不满足，需要借助哈希表或额外技巧，不能简单套用模板。</p>
+<h3 id="3-窗口信息可增量维护">3. 窗口信息可增量维护</h3>
+<p>窗口扩展或收缩时，统计量（和、频率、最大值等）可以在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(1)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord">1</span><span class="mclose">)</span></span></span></span> 或均摊 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(1)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord">1</span><span class="mclose">)</span></span></span></span> 时间内更新。若需要每次重新扫描窗口（如窗口最大值用普通遍历），则退化到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(nk)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0315em;">nk</span><span class="mclose">)</span></span></span></span>，失去意义。</p>
+<hr>
+<h2 id="三、滑动窗口的两种类型">三、滑动窗口的两种类型</h2>
+<h3 id="1-定长窗口（Fixed-size-Window）">1. 定长窗口（Fixed-size Window）</h3>
+<p>窗口大小固定为 <code>k</code>。每次右移 <code>right</code> 一步，同时右移 <code>left</code> 一步。</p>
+<p><strong>模板</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">fixedWindow</span><span class="params">(<span class="type">const</span> vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">    <span class="type">int</span> state = <span class="number">0</span>;          <span class="comment">// 窗口内的统计量</span></span><br><span class="line">    <span class="type">int</span> answer = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; n; ++right) &#123;</span><br><span class="line">        <span class="comment">// 1. 纳入 nums[right]</span></span><br><span class="line">        state += nums[right];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 窗口大小达到 k 后开始记录答案，并移除 nums[right - k + 1]</span></span><br><span class="line">        <span class="keyword">if</span> (right &gt;= k - <span class="number">1</span>) &#123;</span><br><span class="line">            answer = <span class="built_in">max</span>(answer, state);</span><br><span class="line">            state -= nums[right - k + <span class="number">1</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> answer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-变长窗口（Variable-size-Window）">2. 变长窗口（Variable-size Window）</h3>
+<p>窗口大小动态变化，由约束条件决定。这是更常见也更有技巧性的一类。</p>
+<p><strong>模板</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">variableWindow</span><span class="params">(<span class="type">const</span> vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="comment">/* 约束参数 */</span>)</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">    <span class="type">int</span> left = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> state = <span class="number">0</span>;          <span class="comment">// 窗口内的统计量</span></span><br><span class="line">    <span class="type">int</span> answer = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; n; ++right) &#123;</span><br><span class="line">        <span class="comment">// 1. 将 nums[right] 纳入窗口</span></span><br><span class="line">        state += nums[right];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 若窗口不满足约束，收缩左边界</span></span><br><span class="line">        <span class="keyword">while</span> (<span class="comment">/* 窗口不合法 */</span>) &#123;</span><br><span class="line">            state -= nums[left];</span><br><span class="line">            ++left;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3. 此时窗口合法，更新答案</span></span><br><span class="line">        answer = <span class="built_in">max</span>(answer, right - left + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> answer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>掌握这个模板，可以解决 80% 的滑动窗口问题。</strong></p>
+<hr>
+<h2 id="四、滑动窗口-vs-其他算法">四、滑动窗口 vs 其他算法</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>滑动窗口</th>
+<th>前缀和</th>
+<th>二分答案</th>
+<th>动态规划</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>求解对象</td>
+<td>连续子区间</td>
+<td>连续子区间</td>
+<td>区间/最值</td>
+<td>一般子结构</td>
+</tr>
+<tr>
+<td>约束类型</td>
+<td>单调型</td>
+<td>任意求和</td>
+<td>单调判定</td>
+<td>依赖状态</td>
+</tr>
+<tr>
+<td>时间复杂度</td>
+<td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></td>
+<td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span> 预处理 + <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(1)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord">1</span><span class="mclose">)</span></span></span></span> 查询</td>
+<td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mi>log</mi><mo>⁡</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n \log n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></td>
+<td>视状态而定</td>
+</tr>
+<tr>
+<td>是否需要单调性</td>
+<td>是</td>
+<td>否</td>
+<td>是</td>
+<td>否</td>
+</tr>
+<tr>
+<td>典型问题</td>
+<td>最长无重复子串</td>
+<td>子数组和</td>
+<td>最大最小值</td>
+<td>背包、LCS</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键区别</strong>：</p>
+<ul>
+<li>求“子数组和等于 k 的个数”这类问题，因为约束不具单调性，需用<strong>前缀和 + 哈希表</strong>，而非滑动窗口。</li>
+<li>求“和至少为 target 的最短子数组”（元素全正），可以用滑动窗口，因为和具有单调性。</li>
+<li>若数组含负数，“和”不再具有单调性，滑动窗口失效。</li>
+</ul>
+<hr>
+<h2 id="五、经典例题">五、经典例题</h2>
+<h3 id="例题-1：无重复字符的最长子串（LeetCode-3）">例题 1：无重复字符的最长子串（LeetCode 3）</h3>
+<p><strong>问题</strong>：给定字符串 <code>s</code>，求不含重复字符的最长子串长度。</p>
+<p><strong>思路</strong>：变长窗口 + 哈希表记录字符最后出现的位置。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unordered_map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">lengthOfLongestSubstring</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">    unordered_map&lt;<span class="type">char</span>, <span class="type">int</span>&gt; lastPos;</span><br><span class="line">    <span class="type">int</span> left = <span class="number">0</span>, answer = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; (<span class="type">int</span>)s.<span class="built_in">size</span>(); ++right) &#123;</span><br><span class="line">        <span class="type">char</span> c = s[right];</span><br><span class="line">        <span class="keyword">if</span> (lastPos.<span class="built_in">count</span>(c) &amp;&amp; lastPos[c] &gt;= left) &#123;</span><br><span class="line">            left = lastPos[c] + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        lastPos[c] = right;</span><br><span class="line">        answer = <span class="built_in">max</span>(answer, right - left + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> answer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></p>
+<p><strong>要点</strong>：<code>left</code> 直接跳到重复字符的下一位，避免逐个字符收缩。<code>lastPos[c] &gt;= left</code> 的判断确保不会跳到窗口之外。</p>
+<hr>
+<h3 id="例题-2：长度最小的子数组（LeetCode-209）">例题 2：长度最小的子数组（LeetCode 209）</h3>
+<p><strong>问题</strong>：给定正整数数组 <code>nums</code> 和目标值 <code>target</code>，求和 ≥ target 的最短连续子数组长度。</p>
+<p><strong>思路</strong>：变长窗口，窗口和 ≥ target 时收缩左边界。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;climits&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">minSubArrayLen</span><span class="params">(<span class="type">int</span> target, vector&lt;<span class="type">int</span>&gt;&amp; nums)</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">    <span class="type">int</span> left = <span class="number">0</span>, sum = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> answer = INT_MAX;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; n; ++right) &#123;</span><br><span class="line">        sum += nums[right];</span><br><span class="line">        <span class="keyword">while</span> (sum &gt;= target) &#123;</span><br><span class="line">            answer = <span class="built_in">min</span>(answer, right - left + <span class="number">1</span>);</span><br><span class="line">            sum -= nums[left++];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> answer == INT_MAX ? <span class="number">0</span> : answer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></p>
+<p><strong>要点</strong>：题目限定元素为正整数，保证窗口和的单调性。若元素可能为负，需改用前缀和或二分。</p>
+<hr>
+<h3 id="例题-3：找到字符串中所有字母异位词（LeetCode-438）">例题 3：找到字符串中所有字母异位词（LeetCode 438）</h3>
+<p><strong>问题</strong>：给定字符串 <code>s</code> 和 <code>p</code>，找出 <code>s</code> 中所有 <code>p</code> 的字母异位词子串的起始索引。</p>
+<p><strong>思路</strong>：定长窗口（窗口大小 = <code>len(p)</code>）+ 计数数组。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">findAnagrams</span><span class="params">(string s, string p)</span> </span>&#123;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; result;</span><br><span class="line">    <span class="keyword">if</span> (s.<span class="built_in">size</span>() &lt; p.<span class="built_in">size</span>()) <span class="keyword">return</span> result;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">need</span><span class="params">(<span class="number">26</span>, <span class="number">0</span>)</span>, <span class="title">window</span><span class="params">(<span class="number">26</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">char</span> c : p) ++need[c - <span class="string">&#x27;a&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> k = p.<span class="built_in">size</span>();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; (<span class="type">int</span>)s.<span class="built_in">size</span>(); ++right) &#123;</span><br><span class="line">        ++window[s[right] - <span class="string">&#x27;a&#x27;</span>];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (right &gt;= k) --window[s[right - k] - <span class="string">&#x27;a&#x27;</span>];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (right &gt;= k - <span class="number">1</span> &amp;&amp; window == need) &#123;</span><br><span class="line">            result.<span class="built_in">push_back</span>(right - k + <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo>⋅</mo><mi mathvariant="normal">∣</mi><mi mathvariant="normal">Σ</mi><mi mathvariant="normal">∣</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n \cdot |\Sigma|)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣Σ∣</span><span class="mclose">)</span></span></span></span>，其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><mi mathvariant="normal">Σ</mi><mi mathvariant="normal">∣</mi><mo>=</mo><mn>26</mn></mrow><annotation encoding="application/x-tex">|\Sigma| = 26</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣Σ∣</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">26</span></span></span></span>，可视为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span>。</p>
+<p><strong>要点</strong>：定长窗口进入即出。用固定大小的数组代替哈希表，常数更小。</p>
+<hr>
+<h3 id="例题-4：最小覆盖子串（LeetCode-76）">例题 4：最小覆盖子串（LeetCode 76）</h3>
+<p><strong>问题</strong>：给定字符串 <code>s</code> 和 <code>t</code>，求 <code>s</code> 中涵盖 <code>t</code> 所有字符的最短子串。</p>
+<p><strong>思路</strong>：变长窗口 + 哈希表 + 有效字符计数。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unordered_map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;climits&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function">string <span class="title">minWindow</span><span class="params">(string s, string t)</span> </span>&#123;</span><br><span class="line">    unordered_map&lt;<span class="type">char</span>, <span class="type">int</span>&gt; need, window;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">char</span> c : t) ++need[c];</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> left = <span class="number">0</span>, valid = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> start = <span class="number">0</span>, minLen = INT_MAX;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; (<span class="type">int</span>)s.<span class="built_in">size</span>(); ++right) &#123;</span><br><span class="line">        <span class="type">char</span> c = s[right];</span><br><span class="line">        <span class="keyword">if</span> (need.<span class="built_in">count</span>(c)) &#123;</span><br><span class="line">            ++window[c];</span><br><span class="line">            <span class="keyword">if</span> (window[c] == need[c]) ++valid;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (valid == (<span class="type">int</span>)need.<span class="built_in">size</span>()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (right - left + <span class="number">1</span> &lt; minLen) &#123;</span><br><span class="line">                start = left;</span><br><span class="line">                minLen = right - left + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">char</span> d = s[left];</span><br><span class="line">            <span class="keyword">if</span> (need.<span class="built_in">count</span>(d)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (window[d] == need[d]) --valid;</span><br><span class="line">                --window[d];</span><br><span class="line">            &#125;</span><br><span class="line">            ++left;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> minLen == INT_MAX ? <span class="string">&quot;&quot;</span> : s.<span class="built_in">substr</span>(start, minLen);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo>+</mo><mi>m</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n + m)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">m</span><span class="mclose">)</span></span></span></span></p>
+<p><strong>要点</strong>：<code>valid</code> 记录已满足数量要求的字符种类数，避免每次比较整个哈希表。这是“最短覆盖型”问题的经典写法。</p>
+<hr>
+<h3 id="例题-5：滑动窗口最大值（LeetCode-239）">例题 5：滑动窗口最大值（LeetCode 239）</h3>
+<p><strong>问题</strong>：给定数组 <code>nums</code> 和窗口大小 <code>k</code>，返回每个窗口内的最大值。</p>
+<p><strong>思路</strong>：定长窗口 + 单调队列（双端队列维护递减序列）。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;deque&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">maxSlidingWindow</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">    deque&lt;<span class="type">int</span>&gt; dq;      <span class="comment">// 存下标，对应值递减</span></span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; result;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; (<span class="type">int</span>)nums.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">        <span class="comment">// 队尾弹出比当前元素小的下标</span></span><br><span class="line">        <span class="keyword">while</span> (!dq.<span class="built_in">empty</span>() &amp;&amp; nums[dq.<span class="built_in">back</span>()] &lt;= nums[i]) dq.<span class="built_in">pop_back</span>();</span><br><span class="line">        dq.<span class="built_in">push_back</span>(i);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 队首元素滑出窗口则弹出</span></span><br><span class="line">        <span class="keyword">if</span> (dq.<span class="built_in">front</span>() &lt;= i - k) dq.<span class="built_in">pop_front</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 窗口形成后开始记录答案</span></span><br><span class="line">        <span class="keyword">if</span> (i &gt;= k - <span class="number">1</span>) result.<span class="built_in">push_back</span>(nums[dq.<span class="built_in">front</span>()]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span>，每个元素最多进出队各一次。</p>
+<p><strong>要点</strong>：单调队列是滑动窗口求极值的关键数据结构。窗口内最大值永远在队首。</p>
+<hr>
+<h3 id="例题-6：替换后的最长重复字符（LeetCode-424）">例题 6：替换后的最长重复字符（LeetCode 424）</h3>
+<p><strong>问题</strong>：给定字符串 <code>s</code> 和整数 <code>k</code>，最多可以将 <code>k</code> 个字符替换为任意字符，求替换后最长的相同字符子串长度。</p>
+<p><strong>思路</strong>：变长窗口，窗口内“非最多数字符”的数量不能超过 <code>k</code>。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">characterReplacement</span><span class="params">(string s, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">count</span><span class="params">(<span class="number">26</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="type">int</span> left = <span class="number">0</span>, maxCount = <span class="number">0</span>, answer = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; (<span class="type">int</span>)s.<span class="built_in">size</span>(); ++right) &#123;</span><br><span class="line">        maxCount = <span class="built_in">max</span>(maxCount, ++count[s[right] - <span class="string">&#x27;A&#x27;</span>]);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 窗口长度 - 出现最多的字符数 &gt; k，则窗口非法</span></span><br><span class="line">        <span class="keyword">if</span> (right - left + <span class="number">1</span> - maxCount &gt; k) &#123;</span><br><span class="line">            --count[s[left] - <span class="string">&#x27;A&#x27;</span>];</span><br><span class="line">            ++left;</span><br><span class="line">        &#125;</span><br><span class="line">        answer = <span class="built_in">max</span>(answer, right - left + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> answer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></p>
+<p><strong>要点</strong>：<code>maxCount</code> 只增不减。因为只有更大的窗口才可能产生更优解，缩小窗口时不需同步减小 <code>maxCount</code>，这正是代码中 <code>if</code> 而非 <code>while</code> 的原因。</p>
+<hr>
+<h3 id="例题-7：水果成篮（LeetCode-904）">例题 7：水果成篮（LeetCode 904）</h3>
+<p><strong>问题</strong>：数组 <code>fruits</code> 表示每棵树上的水果种类，你有两个篮子，每个篮子只能装一种水果。求最多能采摘多少棵树（连续子数组）。</p>
+<p><strong>思路</strong>：变长窗口，窗口内不同水果种类数不超过 2。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unordered_map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">totalFruit</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; fruits)</span> </span>&#123;</span><br><span class="line">    unordered_map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; count;</span><br><span class="line">    <span class="type">int</span> left = <span class="number">0</span>, answer = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; (<span class="type">int</span>)fruits.<span class="built_in">size</span>(); ++right) &#123;</span><br><span class="line">        ++count[fruits[right]];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (count.<span class="built_in">size</span>() &gt; <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (--count[fruits[left]] == <span class="number">0</span>) &#123;</span><br><span class="line">                count.<span class="built_in">erase</span>(fruits[left]);</span><br><span class="line">            &#125;</span><br><span class="line">            ++left;</span><br><span class="line">        &#125;</span><br><span class="line">        answer = <span class="built_in">max</span>(answer, right - left + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> answer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></p>
+<hr>
+<h3 id="例题-8：最大连续-1-的个数-III（LeetCode-1004）">例题 8：最大连续 1 的个数 III（LeetCode 1004）</h3>
+<p><strong>问题</strong>：给定二进制数组 <code>nums</code> 和整数 <code>k</code>，最多可将 <code>k</code> 个 0 翻转为 1，求最长连续 1 的长度。</p>
+<p><strong>思路</strong>：变长窗口，窗口内 0 的数量 ≤ k。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">longestOnes</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> left = <span class="number">0</span>, zeroCount = <span class="number">0</span>, answer = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> right = <span class="number">0</span>; right &lt; (<span class="type">int</span>)nums.<span class="built_in">size</span>(); ++right) &#123;</span><br><span class="line">        <span class="keyword">if</span> (nums[right] == <span class="number">0</span>) ++zeroCount;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (zeroCount &gt; k) &#123;</span><br><span class="line">            <span class="keyword">if</span> (nums[left] == <span class="number">0</span>) --zeroCount;</span><br><span class="line">            ++left;</span><br><span class="line">        &#125;</span><br><span class="line">        answer = <span class="built_in">max</span>(answer, right - left + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> answer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></p>
+<hr>
+<h2 id="六、常见陷阱">六、常见陷阱</h2>
+<ol>
+<li>
+<p><strong>约束不具单调性却硬用滑动窗口</strong><br>
+最典型的反例是“子数组和恰好为 k”。因为数组中可能存在负数，窗口和不再随右端点单调递增，滑动窗口会漏解或死循环，必须改用前缀和 + 哈希表。</p>
+</li>
+<li>
+<p><strong>窗口收缩用 <code>if</code> 还是 <code>while</code></strong><br>
+当约束是“≤ k”这类硬性上限时，必须用 <code>while</code>，确保收缩到合法为止。当答案只依赖最大窗口、且缩小窗口不可能产生更优解时（如例题 6），可用 <code>if</code> 使窗口只减一寸，保证窗口长度不减。</p>
+</li>
+<li>
+<p><strong>哈希表忘记清理零值键</strong><br>
+例如 <code>count[c]</code> 减到 0 后，如果没 <code>erase</code>，<code>count.size()</code> 仍然包含该键，会导致“不同种类数”判断出错。</p>
+</li>
+<li>
+<p><strong>边界条件处理不当</strong><br>
+空数组、<code>k &gt; n</code>、<code>k = 0</code>、<code>target</code> 小于最小元素等，需要在代码开头做判断。</p>
+</li>
+<li>
+<p><strong>窗口信息未能增量更新</strong><br>
+例如求窗口最大/最小值时，如果每次窗口变动都重新遍历，复杂度会退化到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(nk)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0315em;">nk</span><span class="mclose">)</span></span></span></span>。此时应使用单调队列或有序结构。</p>
+</li>
+<li>
+<p><strong><code>left</code> 越过 <code>right</code></strong><br>
+收缩窗口时需保证 <code>left &lt;= right</code>。在某些写法中（如例题 6 用 <code>if</code>），<code>left</code> 可能与 <code>right</code> 同步推进，但绝不能超过。</p>
+</li>
+</ol>
+<hr>
+<h2 id="七、刷题路线">七、刷题路线</h2>
+<p><strong>入门（定长窗口）</strong></p>
+<ul>
+<li>[ ] LeetCode 643. 子数组最大平均数 I</li>
+<li>[ ] LeetCode 1456. 定长子串中元音的最大数目</li>
+<li>[ ] LeetCode 1343. 大小为 K 且平均值大于等于阈值的子数组数目</li>
+<li>[ ] LeetCode 1052. 爱生气的书店老板</li>
+</ul>
+<p><strong>进阶（变长窗口）</strong></p>
+<ul>
+<li>[ ] LeetCode 3. 无重复字符的最长子串</li>
+<li>[ ] LeetCode 209. 长度最小的子数组</li>
+<li>[ ] LeetCode 438. 找到字符串中所有字母异位词</li>
+<li>[ ] LeetCode 904. 水果成篮</li>
+<li>[ ] LeetCode 1004. 最大连续 1 的个数 III</li>
+<li>[ ] LeetCode 424. 替换后的最长重复字符</li>
+</ul>
+<p><strong>高阶（结合数据结构 / 复杂约束）</strong></p>
+<ul>
+<li>[ ] LeetCode 76. 最小覆盖子串</li>
+<li>[ ] LeetCode 239. 滑动窗口最大值</li>
+<li>[ ] LeetCode 30. 串联所有单词的子串</li>
+<li>[ ] LeetCode 992. K 个不同整数的子数组</li>
+<li>[ ] LeetCode 1425. 带限制的子序列和</li>
+</ul>
+<hr>
+<h2 id="八、总结">八、总结</h2>
+<p>滑动窗口是一种将双指针技巧应用于连续区间问题的算法。掌握它的关键在于：</p>
+<ol>
+<li><strong>识别问题类型</strong>：是否是连续子数组/子串？约束是否具有单调性？</li>
+<li><strong>选择窗口类型</strong>：定长窗口用“右进左出”，变长窗口用“扩展—收缩”。</li>
+<li><strong>明确窗口状态</strong>：和、频率表、单调队列、有效计数等。</li>
+<li><strong>判断收缩方式</strong>：用 <code>while</code> 还是 <code>if</code>，取决于约束与答案的关系。</li>
+<li><strong>警惕失效场景</strong>：约束不单调、含负数、窗口统计无法增量维护时，滑动窗口不适用。</li>
+</ol>
+<p>一句话概括滑动窗口：</p>
+<blockquote>
+<p><strong>维护一段会呼吸的区间，右端大胆探索，左端谨慎收缩，两端永不后退。</strong></p>
+</blockquote>
+<hr>
+<p><em>本文基于 LeetCode 题库与经典算法教材整理，代码示例使用 C++17。</em></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://edwardlwang.github.io">Edward Wang</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://edwardlwang.github.io/2026/09/16/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%9A%E5%8F%B3%E7%AB%AF%E5%A4%A7%E8%83%86%E6%8E%A2%E7%B4%A2%EF%BC%8C%E5%B7%A6%E7%AB%AF%E8%B0%A8%E6%85%8E%E6%94%B6%E7%BC%A9/">https://edwardlwang.github.io/2026/09/16/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%9A%E5%8F%B3%E7%AB%AF%E5%A4%A7%E8%83%86%E6%8E%A2%E7%B4%A2%EF%BC%8C%E5%B7%A6%E7%AB%AF%E8%B0%A8%E6%85%8E%E6%94%B6%E7%BC%A9/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://edwardlwang.github.io" target="_blank">Edward 的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Sliding-Window/">Sliding Window</a><a class="post-meta__tags" href="/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/">滑动窗口</a></div><div class="post-share"><div class="social-share" data-image="/img/GBC8.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/09/16/%E8%B4%AA%E5%BF%83%E7%AE%97%E6%B3%95%EF%BC%88Greedy-Algorithm%EF%BC%89%E5%85%A5%E9%97%A8%E5%88%B0%E8%BF%9B%E9%98%B6/" title="贪心算法（Greedy Algorithm）入门到进阶"><img class="cover" src="/img/GBC8.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">贪心算法（Greedy Algorithm）入门到进阶</div></div><div class="info-2"><div class="info-item-1">前言 贪心算法（Greedy Algorithm）是一种在每一步决策中都选择当前看起来最优的策略，并期望通过一系列局部最优选择得到全局最优解的算法思想。 它的代码通常简短、直观，时间复杂度低，因此在竞赛和工程中应用广泛。但贪心法也有一个致命弱点：局部最优不一定能推出全局最优。因此，判断一个问题能否用贪心求解，以及如何证明贪心的正确性，是掌握贪心法的关键。 本文系统梳理贪心法的适用条件、证明方法、经典模型与常见陷阱，代码示例统一使用 C++17。  一、什么是贪心法 贪心法的基本流程：  将问题分解为一系列决策步骤。 在每一步，根据某个贪心策略选择当前最优的选项。 一旦做出选择，就不再回溯，继续下一步。 最终得到的解即为算法的输出。  与动态规划不同，贪心法不保存子问题的解，也不比较多种决策路径，因此实现更简单、效率更高。 典型例子：活动选择问题 给定一组活动，每个活动有开始时间和结束时间，要求选择尽可能多的互不重叠的活动。 贪心策略：优先选择结束时间最早的活动。 12345678910111213141516171819#include &lt;vector&gt;#includ...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/Awa%20Subaru.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Edward Wang</div><div class="author-info-description">一个关于科技与生活的博客。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">12</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/edwardlwang" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:EdwardLeiWang@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/182721091" target="_blank" title="Bilibili"><i class="fab fa-bilibili" style="color: #ff2c5a;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">愿各位新的一年都能心想事成，万事如意！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3"><span class="toc-number">2.</span> <span class="toc-text">一、什么是滑动窗口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E7%9A%84%E9%80%82%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-number">3.</span> <span class="toc-text">二、滑动窗口的适用条件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%B1%82%E8%A7%A3%E5%AF%B9%E8%B1%A1%E6%98%AF%E8%BF%9E%E7%BB%AD%E5%AD%90%E5%8C%BA%E9%97%B4"><span class="toc-number">3.1.</span> <span class="toc-text">1. 求解对象是连续子区间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%AA%97%E5%8F%A3%E7%9A%84%E5%90%88%E6%B3%95%E6%80%A7%E5%85%B7%E6%9C%89%E5%8D%95%E8%B0%83%E6%80%A7"><span class="toc-number">3.2.</span> <span class="toc-text">2. 窗口的合法性具有单调性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%AA%97%E5%8F%A3%E4%BF%A1%E6%81%AF%E5%8F%AF%E5%A2%9E%E9%87%8F%E7%BB%B4%E6%8A%A4"><span class="toc-number">3.3.</span> <span class="toc-text">3. 窗口信息可增量维护</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E7%9A%84%E4%B8%A4%E7%A7%8D%E7%B1%BB%E5%9E%8B"><span class="toc-number">4.</span> <span class="toc-text">三、滑动窗口的两种类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%AE%9A%E9%95%BF%E7%AA%97%E5%8F%A3%EF%BC%88Fixed-size-Window%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">1. 定长窗口（Fixed-size Window）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%98%E9%95%BF%E7%AA%97%E5%8F%A3%EF%BC%88Variable-size-Window%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">2. 变长窗口（Variable-size Window）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3-vs-%E5%85%B6%E4%BB%96%E7%AE%97%E6%B3%95"><span class="toc-number">5.</span> <span class="toc-text">四、滑动窗口 vs 其他算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BB%8F%E5%85%B8%E4%BE%8B%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">五、经典例题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98-1%EF%BC%9A%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2%EF%BC%88LeetCode-3%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">例题 1：无重复字符的最长子串（LeetCode 3）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98-2%EF%BC%9A%E9%95%BF%E5%BA%A6%E6%9C%80%E5%B0%8F%E7%9A%84%E5%AD%90%E6%95%B0%E7%BB%84%EF%BC%88LeetCode-209%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">例题 2：长度最小的子数组（LeetCode 209）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98-3%EF%BC%9A%E6%89%BE%E5%88%B0%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%AD%E6%89%80%E6%9C%89%E5%AD%97%E6%AF%8D%E5%BC%82%E4%BD%8D%E8%AF%8D%EF%BC%88LeetCode-438%EF%BC%89"><span class="toc-number">6.3.</span> <span class="toc-text">例题 3：找到字符串中所有字母异位词（LeetCode 438）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98-4%EF%BC%9A%E6%9C%80%E5%B0%8F%E8%A6%86%E7%9B%96%E5%AD%90%E4%B8%B2%EF%BC%88LeetCode-76%EF%BC%89"><span class="toc-number">6.4.</span> <span class="toc-text">例题 4：最小覆盖子串（LeetCode 76）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98-5%EF%BC%9A%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E6%9C%80%E5%A4%A7%E5%80%BC%EF%BC%88LeetCode-239%EF%BC%89"><span class="toc-number">6.5.</span> <span class="toc-text">例题 5：滑动窗口最大值（LeetCode 239）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98-6%EF%BC%9A%E6%9B%BF%E6%8D%A2%E5%90%8E%E7%9A%84%E6%9C%80%E9%95%BF%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%EF%BC%88LeetCode-424%EF%BC%89"><span class="toc-number">6.6.</span> <span class="toc-text">例题 6：替换后的最长重复字符（LeetCode 424）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98-7%EF%BC%9A%E6%B0%B4%E6%9E%9C%E6%88%90%E7%AF%AE%EF%BC%88LeetCode-904%EF%BC%89"><span class="toc-number">6.7.</span> <span class="toc-text">例题 7：水果成篮（LeetCode 904）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98-8%EF%BC%9A%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD-1-%E7%9A%84%E4%B8%AA%E6%95%B0-III%EF%BC%88LeetCode-1004%EF%BC%89"><span class="toc-number">6.8.</span> <span class="toc-text">例题 8：最大连续 1 的个数 III（LeetCode 1004）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B8%B8%E8%A7%81%E9%99%B7%E9%98%B1"><span class="toc-number">7.</span> <span class="toc-text">六、常见陷阱</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%88%B7%E9%A2%98%E8%B7%AF%E7%BA%BF"><span class="toc-number">8.</span> <span class="toc-text">七、刷题路线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">9.</span> <span class="toc-text">八、总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/09/16/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%9A%E5%8F%B3%E7%AB%AF%E5%A4%A7%E8%83%86%E6%8E%A2%E7%B4%A2%EF%BC%8C%E5%B7%A6%E7%AB%AF%E8%B0%A8%E6%85%8E%E6%94%B6%E7%BC%A9/" title="滑动窗口：右端大胆探索，左端谨慎收缩"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="滑动窗口：右端大胆探索，左端谨慎收缩"/></a><div class="content"><a class="title" href="/2026/09/16/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%9A%E5%8F%B3%E7%AB%AF%E5%A4%A7%E8%83%86%E6%8E%A2%E7%B4%A2%EF%BC%8C%E5%B7%A6%E7%AB%AF%E8%B0%A8%E6%85%8E%E6%94%B6%E7%BC%A9/" title="滑动窗口：右端大胆探索，左端谨慎收缩">滑动窗口：右端大胆探索，左端谨慎收缩</a><time datetime="2026-09-16T09:32:19.000Z" title="发表于 2026-09-16 17:32:19">2026-09-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/16/%E8%B4%AA%E5%BF%83%E7%AE%97%E6%B3%95%EF%BC%88Greedy-Algorithm%EF%BC%89%E5%85%A5%E9%97%A8%E5%88%B0%E8%BF%9B%E9%98%B6/" title="贪心算法（Greedy Algorithm）入门到进阶"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="贪心算法（Greedy Algorithm）入门到进阶"/></a><div class="content"><a class="title" href="/2026/09/16/%E8%B4%AA%E5%BF%83%E7%AE%97%E6%B3%95%EF%BC%88Greedy-Algorithm%EF%BC%89%E5%85%A5%E9%97%A8%E5%88%B0%E8%BF%9B%E9%98%B6/" title="贪心算法（Greedy Algorithm）入门到进阶">贪心算法（Greedy Algorithm）入门到进阶</a><time datetime="2026-09-16T08:20:11.000Z" title="发表于 2026-09-16 16:20:11">2026-09-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/16/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%EF%BC%88Dynamic-Programming%EF%BC%89%E5%85%A5%E9%97%A8%E5%88%B0%E8%BF%9B%E9%98%B6/" title="动态规划（Dynamic Programming）入门到进阶"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="动态规划（Dynamic Programming）入门到进阶"/></a><div class="content"><a class="title" href="/2026/09/16/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%EF%BC%88Dynamic-Programming%EF%BC%89%E5%85%A5%E9%97%A8%E5%88%B0%E8%BF%9B%E9%98%B6/" title="动态规划（Dynamic Programming）入门到进阶">动态规划（Dynamic Programming）入门到进阶</a><time datetime="2026-09-16T07:45:32.000Z" title="发表于 2026-09-16 15:45:32">2026-09-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/10/C++%E8%BF%AD%E4%BB%A3%E5%99%A8%E8%AF%A6%E8%A7%A3%EF%BC%9A%E4%BB%8Eunordered_map%E7%9A%84find%E4%B8%8Eoperator%5B%5D%E8%AF%B4%E8%B5%B7/" title="C++ 迭代器详解：从 unordered_map 的 find 与 operator[] 说起"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 迭代器详解：从 unordered_map 的 find 与 operator[] 说起"/></a><div class="content"><a class="title" href="/2026/09/10/C++%E8%BF%AD%E4%BB%A3%E5%99%A8%E8%AF%A6%E8%A7%A3%EF%BC%9A%E4%BB%8Eunordered_map%E7%9A%84find%E4%B8%8Eoperator%5B%5D%E8%AF%B4%E8%B5%B7/" title="C++ 迭代器详解：从 unordered_map 的 find 与 operator[] 说起">C++ 迭代器详解：从 unordered_map 的 find 与 operator[] 说起</a><time datetime="2026-09-10T07:31:48.000Z" title="发表于 2026-09-10 15:31:48">2026-09-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/09/Git-%E6%93%8D%E4%BD%9C%E6%8C%87%E5%8D%97%EF%BC%9A%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E6%97%A5%E5%B8%B8%E5%8D%8F%E4%BD%9C/" title="Git 操作指南：从入门到日常协作"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Git 操作指南：从入门到日常协作"/></a><div class="content"><a class="title" href="/2026/09/09/Git-%E6%93%8D%E4%BD%9C%E6%8C%87%E5%8D%97%EF%BC%9A%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E6%97%A5%E5%B8%B8%E5%8D%8F%E4%BD%9C/" title="Git 操作指南：从入门到日常协作">Git 操作指南：从入门到日常协作</a><time datetime="2026-09-09T08:11:15.000Z" title="发表于 2026-09-09 16:11:15">2026-09-09</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/GBC8.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By Edward Wang</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div><div class="footer_custom_text">Hi, welcome to my <a href="https://edwardlwang.github.io/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/js/tw_cn.js?v=5.7.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.innerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    // Clean up previous event listeners and pending frames
+    if (wrap.__mermaidAbortController) {
+      wrap.__mermaidAbortController.abort()
+      if (wrap.__mermaidRafId) cancelAnimationFrame(wrap.__mermaidRafId)
+    }
+    const ac = new AbortController()
+    wrap.__mermaidAbortController = ac
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+    // Disable default gestures to prevent scroll chaining and pinch-zoom penetration in Chrome
+    svg.style.touchAction = 'none'
+
+    // Cache BoundingClientRect, throttled on scroll to reduce reflow
+    let cachedRect = svg.getBoundingClientRect()
+    let rectDirty = false
+    const markRectDirty = () => { rectDirty = true }
+    window.addEventListener('resize', markRectDirty, { signal: ac.signal })
+    window.addEventListener('scroll', markRectDirty, { signal: ac.signal, capture: true })
+    const getRect = () => {
+      if (rectDirty) {
+        cachedRect = svg.getBoundingClientRect()
+        rectDirty = false
+      }
+      return cachedRect
+    }
+
+    // Precompute clamp bounds from initial viewBox
+    const minW = initVb[2] * 0.1
+    const maxW = initVb[2] * 10
+    const minH = initVb[3] * 0.1
+    const maxH = initVb[3] * 10
+    const clampVb = vb => {
+      const out = vb.slice()
+      out[2] = clamp(out[2], minW, maxW)
+      out[3] = clamp(out[3], minH, maxH)
+      return out
+    }
+
+    // Throttle DOM updates using requestAnimationFrame
+    let pendingVb = null
+    let rafId = null
+    const applyVb = () => {
+      if (pendingVb) {
+        wrap.__mermaidCurViewBox = pendingVb
+        setSvgViewBox(svg, pendingVb)
+        pendingVb = null
+      }
+      rafId = null
+      wrap.__mermaidRafId = null
+    }
+    const setCurVb = vb => {
+      pendingVb = clampVb(vb)
+      if (!rafId) {
+        rafId = requestAnimationFrame(applyVb)
+        wrap.__mermaidRafId = rafId
+      }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      lastPointerX: 0,
+      lastPointerY: 0
+    }
+
+    const onPointerDown = e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      const curVb = wrap.__mermaidCurViewBox
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (state.pointers.size === 1) {
+        state.startVb = curVb.slice()
+        state.lastPointerX = e.clientX
+        state.lastPointerY = e.clientY
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = curVb.slice()
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = state.pointers.values().next().value
+        const dxClient = p.x - state.lastPointerX
+        const dyClient = p.y - state.lastPointerY
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+        const dx = dxClient * (curVb[2] / rect.width)
+        const dy = dyClient * (curVb[3] / rect.height)
+        setCurVb([curVb[0] - dx, curVb[1] - dy, curVb[2], curVb[3]])
+        return
+      }
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const px = curVb[0] + (cx - rect.left) * (curVb[2] / rect.width)
+        const py = curVb[1] + (cy - rect.top) * (curVb[3] / rect.height)
+        setCurVb(zoomAtPoint(state.startVb, factor, px, py))
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      // Release PointerCapture to avoid event capture anomalies
+      if (svg.hasPointerCapture && svg.hasPointerCapture(e.pointerId)) {
+        svg.releasePointerCapture(e.pointerId)
+      }
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+      } else if (state.pointers.size === 1) {
+        const p = state.pointers.values().next().value
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+      }
+    }
+
+    const onWheel = e => {
+      // Prevent event bubbling from triggering external scroll
+      e.preventDefault()
+      e.stopPropagation()
+      // Normalize deltaY across deltaMode (Chrome uses pixels, Safari uses lines)
+      let delta = e.deltaY
+      if (e.deltaMode === 1) delta *= 16
+      else if (e.deltaMode === 2) delta *= 400
+
+      // Continuous zoom factor: smoother than fixed 1.1/0.9 steps
+      const zoomFactor = Math.pow(1.001, delta)
+
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      const px = curVb[0] + (e.clientX - rect.left) * (curVb[2] / rect.width)
+      const py = curVb[1] + (e.clientY - rect.top) * (curVb[3] / rect.height)
+      setCurVb(zoomAtPoint(curVb, zoomFactor, px, py))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (init) setCurVb(init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown, { signal: ac.signal })
+    svg.addEventListener('pointermove', onPointerMove, { signal: ac.signal })
+    svg.addEventListener('pointerup', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('pointercancel', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('wheel', onWheel, { passive: false, signal: ac.signal })
+    svg.addEventListener('dblclick', onDblClick, { signal: ac.signal })
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      // Clean up event listeners before removing old SVG
+      if (item.__mermaidAbortController) {
+        item.__mermaidAbortController.abort()
+      }
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      let config = {}
+      try {
+        config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      } catch (e) {
+        console.warn('[mermaid] failed to parse dataset.config:', e)
+      }
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (true) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+      const handleError = err => {
+        console.error(`[mermaid] render failed for block #${index}:`, err)
+        const errorEl = document.createElement('div')
+        errorEl.className = 'mermaid-error'
+        errorEl.textContent = `Mermaid render error: ${err.message || err}`
+        mermaidSrc.insertAdjacentElement('afterend', errorEl)
+      }
+
+      try {
+        const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+        // mermaid v9 and v10 compatibility
+        if (typeof renderFn === 'string') {
+          renderMermaid(renderFn)
+        } else {
+          renderFn.then(({ svg }) => renderMermaid(svg)).catch(handleError)
+        }
+      } catch (err) {
+        handleError(err)
+      }
+    })
+  }
+
+  const codeToMermaid = $article => {
+    const codeMermaidEle = $article.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    const $article = document.getElementById('article-container')
+    if (!$article) return
+
+    if (true) codeToMermaid($article)
+    const $mermaid = $article.querySelectorAll('.mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const abcjsInit = () => {
+    const abcjsFn = () => {
+      const $article = document.getElementById("article-container")
+      if (!$article || $article.querySelector(".hbe-container")) return
+
+      setTimeout(() => {
+        const sheets = $article.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.textContent, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object" && ABCJS !== null) {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs@6.6.4/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script></div><script id="canvas_nest" defer="defer" color="0,0,0" opacity="1" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
