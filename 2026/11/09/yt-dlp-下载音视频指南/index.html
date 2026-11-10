@@ -1,0 +1,843 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>yt-dlp 下载音视频指南 | Edward's Blog</title><meta name="author" content="Edward Wang"><meta name="copyright" content="Edward Wang"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="yt-dlp 是目前最好用的命令行音视频下载工具之一。它继承自 youtube-dl，但更新更快、格式选择更灵活，配合 FFmpeg 可以完成音频提取、封面嵌入、字幕合并等操作。 本文整理一套我常用的命令：下载视频最佳画质、只下载音频最佳音质、嵌入封面、指定保存位置，以及播放列表、字幕、代理和配置文件等常见用法。  仅用于下载你有权保存的内容，请遵守平台条款和当地法律。  安装 yt-dlp 与">
+<meta property="og:type" content="article">
+<meta property="og:title" content="yt-dlp 下载音视频指南">
+<meta property="og:url" content="https://edwardlwang.github.io/2026/11/09/yt-dlp-%E4%B8%8B%E8%BD%BD%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:site_name" content="Edward&#39;s Blog">
+<meta property="og:description" content="yt-dlp 是目前最好用的命令行音视频下载工具之一。它继承自 youtube-dl，但更新更快、格式选择更灵活，配合 FFmpeg 可以完成音频提取、封面嵌入、字幕合并等操作。 本文整理一套我常用的命令：下载视频最佳画质、只下载音频最佳音质、嵌入封面、指定保存位置，以及播放列表、字幕、代理和配置文件等常见用法。  仅用于下载你有权保存的内容，请遵守平台条款和当地法律。  安装 yt-dlp 与">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://edwardlwang.github.io/img/GBC8.jpg">
+<meta property="article:published_time" content="2026-11-09T05:50:09.000Z">
+<meta property="article:modified_time" content="2026-11-10T13:26:10.012Z">
+<meta property="article:author" content="Edward Wang">
+<meta property="article:tag" content="FFmpeg">
+<meta property="article:tag" content="Youtube">
+<meta property="article:tag" content="yt-dlp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://edwardlwang.github.io/img/GBC8.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "yt-dlp 下载音视频指南",
+  "url": "https://edwardlwang.github.io/2026/11/09/yt-dlp-%E4%B8%8B%E8%BD%BD%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8C%87%E5%8D%97/",
+  "image": "https://edwardlwang.github.io/img/GBC8.jpg",
+  "datePublished": "2026-11-09T05:50:09.000Z",
+  "dateModified": "2026-11-10T13:26:10.012Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Edward Wang",
+      "url": "https://edwardlwang.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/blog.ico"><link rel="canonical" href="https://edwardlwang.github.io/2026/11/09/yt-dlp-%E4%B8%8B%E8%BD%BD%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8C%87%E5%8D%97/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.clarity.ms"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', 'ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const start = 9
+              const end = 19
+              const isNight =
+                start < end
+                    ? hour < start || hour >= end
+                    : hour >= start || hour < end
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "v1deo36omf");
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: true,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'yt-dlp 下载音视频指南',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div class="bg-animation" id="web_bg" style="background-image: url(/img/GBC2.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/Awa%20Subaru.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-file-alt"></i><span> 页面</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-couch"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书籍</span></a></li></ul></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-pencil"></i><span> 编程</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/leetcode/"><i class="fa-fw fas fa-code"></i><span> 力扣</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/GBC8.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/Blog.png" alt="Logo"><span class="site-name">Edward's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">yt-dlp 下载音视频指南</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-file-alt"></i><span> 页面</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-couch"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书籍</span></a></li></ul></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-pencil"></i><span> 编程</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/leetcode/"><i class="fa-fw fas fa-code"></i><span> 力扣</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">yt-dlp 下载音视频指南</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-09T05:50:09.000Z" title="发表于 2026-11-09 13:50:09">2026-11-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-10T13:26:10.012Z" title="更新于 2026-11-10 21:26:10">2026-11-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%B7%A5%E5%85%B7%EF%BC%88Tools%EF%BC%89/">工具（Tools）</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><code>yt-dlp</code> 是目前最好用的命令行音视频下载工具之一。它继承自 <code>youtube-dl</code>，但更新更快、格式选择更灵活，配合 <code>FFmpeg</code> 可以完成音频提取、封面嵌入、字幕合并等操作。</p>
+<p>本文整理一套我常用的命令：<strong>下载视频最佳画质、只下载音频最佳音质、嵌入封面、指定保存位置</strong>，以及播放列表、字幕、代理和配置文件等常见用法。</p>
+<blockquote>
+<p>仅用于下载你有权保存的内容，请遵守平台条款和当地法律。</p>
+</blockquote>
+<h2 id="安装-yt-dlp-与-FFmpeg">安装 yt-dlp 与 FFmpeg</h2>
+<p><code>yt-dlp</code> 负责下载，<code>FFmpeg</code> 负责合并音视频、提取音频、转换封面等后处理。两者都建议安装。</p>
+<h3 id="Windows">Windows</h3>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">winget install yt<span class="literal">-dlp</span>.yt<span class="literal">-dlp</span></span><br><span class="line">winget install Gyan.FFmpeg</span><br></pre></td></tr></table></figure>
+<p>也可以使用 <code>scoop</code> 或 <code>choco</code>：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scoop install yt<span class="literal">-dlp</span> ffmpeg</span><br></pre></td></tr></table></figure>
+<h3 id="macOS">macOS</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install yt-dlp ffmpeg</span><br></pre></td></tr></table></figure>
+<h3 id="Linux">Linux</h3>
+<p>推荐用 <code>pipx</code> 安装，避免污染系统 Python：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pipx install yt-dlp</span><br><span class="line"><span class="built_in">sudo</span> apt install ffmpeg</span><br></pre></td></tr></table></figure>
+<p>安装后检查：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp --version</span><br><span class="line">ffmpeg -version</span><br></pre></td></tr></table></figure>
+<p>如果提示找不到 <code>ffmpeg</code>，需要把 FFmpeg 的 <code>bin</code> 目录加入系统 <code>PATH</code>。</p>
+<h2 id="先看看有哪些格式">先看看有哪些格式</h2>
+<p>下载前可以先查看目标页面提供的格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp -F <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>输出里常见几类：</p>
+<ul>
+<li><code>video only</code>：只有视频轨，通常分辨率高</li>
+<li><code>audio only</code>：只有音频轨，适合提取音频</li>
+<li><code>video+audio</code>：音视频合在一起的低分辨率流</li>
+</ul>
+<p><code>yt-dlp</code> 的格式选择里：</p>
+<ul>
+<li><code>bv</code>：最佳纯视频流</li>
+<li><code>ba</code>：最佳纯音频流</li>
+<li><code>bv*+ba/b</code>：最佳视频 + 最佳音频，若没有分离流则回退到最佳合并流</li>
+<li><code>-f &quot;ba&quot;</code>：只选最佳音频</li>
+</ul>
+<h2 id="下载视频：保留最佳画质">下载视频：保留最佳画质</h2>
+<p>最通用的最佳画质命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp \</span><br><span class="line">  -f <span class="string">&quot;bv*+ba/b&quot;</span> \</span><br><span class="line">  --merge-output-format mkv \</span><br><span class="line">  --embed-metadata \</span><br><span class="line">  -P <span class="string">&quot;<span class="variable">$HOME</span>/Videos&quot;</span> \</span><br><span class="line">  -o <span class="string">&quot;%(title)s [%(id)s].%(ext)s&quot;</span> \</span><br><span class="line">  <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>参数说明：</p>
+<ul>
+<li><code>-f &quot;bv*+ba/b&quot;</code>：最佳视频 + 最佳音频，没有分离流时回退到最佳合并流</li>
+<li><code>--merge-output-format mkv</code>：把音视频合并进 MKV 容器。MKV 对编码兼容性好，通常只是封装，不重新编码</li>
+<li><code>--embed-metadata</code>：写入标题、作者等元数据</li>
+<li><code>-P &quot;$HOME/Videos&quot;</code>：指定保存目录</li>
+<li><code>-o &quot;%(title)s [%(id)s].%(ext)s&quot;</code>：文件名模板，附带视频 ID，避免重名</li>
+</ul>
+<p>Windows 下可以把保存目录换成：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-P <span class="string">&quot;D:\Videos&quot;</span></span><br></pre></td></tr></table></figure>
+<p>如果只想要 1080p 以内：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp \</span><br><span class="line">  -f <span class="string">&quot;bv*[height&lt;=1080]+ba/b[height&lt;=1080]&quot;</span> \</span><br><span class="line">  --merge-output-format mkv \</span><br><span class="line">  -P <span class="string">&quot;<span class="variable">$HOME</span>/Videos&quot;</span> \</span><br><span class="line">  -o <span class="string">&quot;%(title)s [%(id)s].%(ext)s&quot;</span> \</span><br><span class="line">  <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>如果你明确需要 MP4，可以把 <code>--merge-output-format mkv</code> 改成 <code>mp4</code>。但要注意：MP4 对某些编码组合兼容性不如 MKV，<code>yt-dlp</code> 默认只做封装，不会为了容器兼容而重新编码。如果封装失败，优先保留 MKV，而不是强行转码损失画质。</p>
+<h2 id="只下载音频：最佳音质-嵌入封面-指定位置">只下载音频：最佳音质 + 嵌入封面 + 指定位置</h2>
+<p>这是本文最核心的一条命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp \</span><br><span class="line">  -x \</span><br><span class="line">  -f <span class="string">&quot;ba&quot;</span> \</span><br><span class="line">  --audio-format best \</span><br><span class="line">  --embed-thumbnail \</span><br><span class="line">  --convert-thumbnails jpg \</span><br><span class="line">  --embed-metadata \</span><br><span class="line">  -P <span class="string">&quot;<span class="variable">$HOME</span>/Music&quot;</span> \</span><br><span class="line">  -o <span class="string">&quot;%(title)s.%(ext)s&quot;</span> \</span><br><span class="line">  <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>Windows 示例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp -x -f <span class="string">&quot;ba&quot;</span> --audio-format best --embed-thumbnail --convert-thumbnails jpg --embed-metadata -P <span class="string">&quot;D:\Music&quot;</span> -o <span class="string">&quot;%(title)s.%(ext)s&quot;</span> <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>关键参数解释：</p>
+<ul>
+<li><code>-x</code>：只提取音频</li>
+<li><code>-f &quot;ba&quot;</code>：选择最佳纯音频流</li>
+<li><code>--audio-format best</code>：<strong>不转码</strong>，保留源站提供的原始音频编码，通常是 Opus 或 M4A/AAC</li>
+<li><code>--embed-thumbnail</code>：把封面嵌入音频文件</li>
+<li><code>--convert-thumbnails jpg</code>：先把封面转成 JPEG，兼容性更好</li>
+<li><code>--embed-metadata</code>：写入标题、作者等元数据</li>
+<li><code>-P</code>：指定保存目录</li>
+<li><code>-o</code>：文件名模板</li>
+</ul>
+<p>如果 URL 带有播放列表参数，但你只想下载当前单个视频，可以加上：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--no-playlist</span><br></pre></td></tr></table></figure>
+<p>如果你希望文件名更安全，避免特殊字符，可以加：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--windows-filenames</span><br></pre></td></tr></table></figure>
+<p>或者更激进地限制为 ASCII 文件名：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--restrict-filenames</span><br></pre></td></tr></table></figure>
+<h2 id="关于“最佳音质”和转码">关于“最佳音质”和转码</h2>
+<p>想保住最佳音质，核心原则是：<strong>能保留原始音频流，就不要转码</strong>。</p>
+<p><code>--audio-format best</code> 的意思就是保留源格式，不二次编码。很多网站提供的是 Opus 或 AAC，这些已经是有损格式，但它们是源站直接提供的音频流。保留它们，至少不会在本地再损失一次。</p>
+<p>如果你强制转成 MP3：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--audio-format mp3 --audio-quality 0</span><br></pre></td></tr></table></figure>
+<p>即使 <code>--audio-quality 0</code> 表示“尽量高质量”，它仍然是<strong>有损转有损</strong>的二次编码，音质不会超过源文件。</p>
+<p>那 FLAC 呢？FLAC 本身是<strong>无损压缩格式</strong>，但“把 Opus/AAC 转成 FLAC”并不会把丢失的细节变回来。FLAC 只是忠实地保存了那个已经有损的源。文件会变大，音质不会提升。所以：</p>
+<ul>
+<li>想保留最佳音质：用 <code>--audio-format best</code></li>
+<li>目标设备只认 MP3：用 <code>--audio-format mp3 --audio-quality 0</code>，接受一次有损转码</li>
+<li>目标设备只认 FLAC：可以用 <code>--audio-format flac</code>，但要知道它不会让有损源变成真无损</li>
+</ul>
+<h2 id="下载播放列表或频道">下载播放列表或频道</h2>
+<p>下载播放列表前 20 个音频，并按上传者和播放列表分目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp \</span><br><span class="line">  -x \</span><br><span class="line">  -f <span class="string">&quot;ba&quot;</span> \</span><br><span class="line">  --audio-format best \</span><br><span class="line">  --embed-thumbnail \</span><br><span class="line">  --convert-thumbnails jpg \</span><br><span class="line">  --playlist-items 1-20 \</span><br><span class="line">  --download-archive archive.txt \</span><br><span class="line">  -P <span class="string">&quot;<span class="variable">$HOME</span>/Music&quot;</span> \</span><br><span class="line">  -o <span class="string">&quot;%(uploader)s/%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s&quot;</span> \</span><br><span class="line">  <span class="string">&quot;播放列表URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li><code>--playlist-items 1-20</code>：只下载第 1 到第 20 个</li>
+<li><code>--download-archive archive.txt</code>：记录已下载过的视频 ID，下次跳过，避免重复下载</li>
+<li><code>%(playlist_index)02d</code>：序号补零，例如 <code>01</code>、<code>02</code></li>
+<li><code>%(uploader)s</code>、<code>%(playlist_title)s</code>：按上传者和播放列表名自动建目录</li>
+</ul>
+<p>如果只想下载单个视频而不是整个播放列表：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--no-playlist</span><br></pre></td></tr></table></figure>
+<h2 id="下载字幕并嵌入视频">下载字幕并嵌入视频</h2>
+<p>下载中英文字幕，转换成 SRT 并嵌入 MKV：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp \</span><br><span class="line">  -f <span class="string">&quot;bv*+ba/b&quot;</span> \</span><br><span class="line">  --merge-output-format mkv \</span><br><span class="line">  --write-subs \</span><br><span class="line">  --write-auto-subs \</span><br><span class="line">  --sub-langs <span class="string">&quot;zh-Hans,zh-CN,en&quot;</span> \</span><br><span class="line">  --convert-subs srt \</span><br><span class="line">  --embed-subs \</span><br><span class="line">  -P <span class="string">&quot;<span class="variable">$HOME</span>/Videos&quot;</span> \</span><br><span class="line">  -o <span class="string">&quot;%(title)s [%(id)s].%(ext)s&quot;</span> \</span><br><span class="line">  <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>如果只想下载字幕文件、不嵌入视频，去掉 <code>--embed-subs</code> 即可。</p>
+<h2 id="代理、Cookies-和限速">代理、Cookies 和限速</h2>
+<p>需要代理时：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp --proxy <span class="string">&quot;http://127.0.0.1:7890&quot;</span> <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>SOCKS5 代理：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp --proxy <span class="string">&quot;socks5://127.0.0.1:1080&quot;</span> <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>需要登录才能访问的内容，可以从浏览器读取 Cookies：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp --cookies-from-browser chrome <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>也可以使用导出的 cookies 文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp --cookies cookies.txt <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>限速下载：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp -r 5M <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>增加分片并发，改善部分站点的下载速度：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp -N 4 <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="用配置文件保存常用参数">用配置文件保存常用参数</h2>
+<p>如果每次都要输入一长串音频参数，可以写进配置文件。</p>
+<p>Linux/macOS 配置文件位置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~/.config/yt-dlp/config</span><br></pre></td></tr></table></figure>
+<p>Windows 配置文件位置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%APPDATA%\yt-dlp\config.txt</span><br></pre></td></tr></table></figure>
+<p>例如写入以下内容，每行一个完整参数：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">--extract-audio</span><br><span class="line">--format=ba</span><br><span class="line">--audio-format=best</span><br><span class="line">--embed-thumbnail</span><br><span class="line">--convert-thumbnails=jpg</span><br><span class="line">--embed-metadata</span><br><span class="line">--output=/home/你的用户名/Music/%(title)s.%(ext)s</span><br></pre></td></tr></table></figure>
+<p>Windows 可以把最后一行改成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--output=D:\Music\%(title)s.%(ext)s</span><br></pre></td></tr></table></figure>
+<p>之后直接运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>就会按配置只下载最佳音质音频，并嵌入封面。</p>
+<h2 id="常见问题">常见问题</h2>
+<p><strong>提示 <code>ffmpeg not found</code></strong></p>
+<p>安装 FFmpeg，并确认 <code>ffmpeg -version</code> 能在终端中正常运行。Windows 需要把 FFmpeg 的 <code>bin</code> 目录加入 <code>PATH</code>。</p>
+<p><strong>封面嵌入失败</strong></p>
+<p>部分容器或格式对封面支持不完整。先尝试加上 <code>--convert-thumbnails jpg</code>。如果仍然失败，可以安装 <code>mutagen</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install mutagen</span><br></pre></td></tr></table></figure>
+<p>或者安装 <code>AtomicParsley</code>，它对 M4A/MP4 封面嵌入很有帮助。</p>
+<p><strong>下载 403 或要求登录</strong></p>
+<p>先更新 <code>yt-dlp</code>，再尝试 <code>--cookies-from-browser</code> 或 <code>--cookies cookies.txt</code>。很多站点会频繁调整访问策略，保持工具更新很重要。</p>
+<p><strong>文件名出现非法字符</strong></p>
+<p>加上 <code>--windows-filenames</code>。如果希望文件名完全限制为 ASCII，可以使用 <code>--restrict-filenames</code>。</p>
+<p><strong>如何更新 yt-dlp</strong></p>
+<p>二进制或官方版本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp -U</span><br></pre></td></tr></table></figure>
+<p>如果是 <code>pipx</code> 安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pipx upgrade yt-dlp</span><br></pre></td></tr></table></figure>
+<h2 id="小结">小结</h2>
+<p>最常用的三套命令可以记成：</p>
+<p>只下载音频最佳音质、嵌入封面、指定目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp -x -f <span class="string">&quot;ba&quot;</span> --audio-format best --embed-thumbnail --convert-thumbnails jpg --embed-metadata -P <span class="string">&quot;保存目录&quot;</span> -o <span class="string">&quot;%(title)s.%(ext)s&quot;</span> <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>下载视频最佳画质：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp -f <span class="string">&quot;bv*+ba/b&quot;</span> --merge-output-format mkv --embed-metadata -P <span class="string">&quot;保存目录&quot;</span> -o <span class="string">&quot;%(title)s [%(id)s].%(ext)s&quot;</span> <span class="string">&quot;视频URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>下载播放列表并去重：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yt-dlp -x -f <span class="string">&quot;ba&quot;</span> --audio-format best --embed-thumbnail --convert-thumbnails jpg --download-archive archive.txt -P <span class="string">&quot;保存目录&quot;</span> -o <span class="string">&quot;%(uploader)s/%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s&quot;</span> <span class="string">&quot;播放列表URL&quot;</span></span><br></pre></td></tr></table></figure>
+<p>核心原则只有一句：<strong>想保住最佳音质，就保留原始音频流，不要做不必要的转码。</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://edwardlwang.github.io">Edward Wang</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://edwardlwang.github.io/2026/11/09/yt-dlp-%E4%B8%8B%E8%BD%BD%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8C%87%E5%8D%97/">https://edwardlwang.github.io/2026/11/09/yt-dlp-%E4%B8%8B%E8%BD%BD%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8C%87%E5%8D%97/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://edwardlwang.github.io" target="_blank">Edward's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/yt-dlp/">yt-dlp</a><a class="post-meta__tags" href="/tags/FFmpeg/">FFmpeg</a><a class="post-meta__tags" href="/tags/Youtube/">Youtube</a></div><div class="post-share"><div class="social-share" data-image="/img/GBC8.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/11/08/Cloudflare-WARP-%E4%B8%8A%E6%89%8B%E6%8C%87%E5%8D%97%EF%BC%9A%E5%8A%A0%E5%AF%86%E4%BD%A0%E7%9A%84%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5/" title="Cloudflare WARP 上手指南：加密你的网络连接"><img class="cover" src="/img/GBC8.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Cloudflare WARP 上手指南：加密你的网络连接</div></div><div class="info-2"><div class="info-item-1">Cloudflare WARP 经常被误读成“免费 VPN”，但如果带着这个预期去用，大概率会困惑于它“为什么不能选国家”“为什么 IP 没变”。这篇指南先把 WARP 到底做什么、不做什么讲清楚，再分别给出 Windows、Linux、macOS 的安装步骤，最后附上连接验证方法和几条实用的排错思路。  WARP 是什么，以及它明确不做什么 WARP 是 Cloudflare 在 1.1.1.1 应用里提供的一项加密传输服务。打开之后，设备发出的流量会经过加密，直接送到离你最近的 Cloudflare 边缘节点，再由 Cloudflare 的全球网络转发出去；DNS 查询则强制走 1.1.1.1 解析器。 它做的事很具体：加密你和 Cloudflare 节点之间的流量，让本地网络或 ISP 看不到你访问了什么；加密 DNS 查询，规避常见的 DNS 污染与劫持；在某些线路上改善路由，这也是 WARP 最初的卖点——让移动网络访问更快。 但它不提供匿名性。Cloudflare 官方文档的原话是 “WARP does not provide anonymity”。对你访问的网站来说...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/Awa%20Subaru.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Edward Wang</div><div class="author-info-description">一个关于科技与生活的博客。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/edwardlwang" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:EdwardLeiWang@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/182721091" target="_blank" title="Bilibili"><i class="fab fa-bilibili" style="color: #ff2c5a;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">愿各位新的一年都能心想事成，万事如意！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85-yt-dlp-%E4%B8%8E-FFmpeg"><span class="toc-number">1.</span> <span class="toc-text">安装 yt-dlp 与 FFmpeg</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Windows"><span class="toc-number">1.1.</span> <span class="toc-text">Windows</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#macOS"><span class="toc-number">1.2.</span> <span class="toc-text">macOS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux"><span class="toc-number">1.3.</span> <span class="toc-text">Linux</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%9C%8B%E7%9C%8B%E6%9C%89%E5%93%AA%E4%BA%9B%E6%A0%BC%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">先看看有哪些格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E8%A7%86%E9%A2%91%EF%BC%9A%E4%BF%9D%E7%95%99%E6%9C%80%E4%BD%B3%E7%94%BB%E8%B4%A8"><span class="toc-number">3.</span> <span class="toc-text">下载视频：保留最佳画质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%AA%E4%B8%8B%E8%BD%BD%E9%9F%B3%E9%A2%91%EF%BC%9A%E6%9C%80%E4%BD%B3%E9%9F%B3%E8%B4%A8-%E5%B5%8C%E5%85%A5%E5%B0%81%E9%9D%A2-%E6%8C%87%E5%AE%9A%E4%BD%8D%E7%BD%AE"><span class="toc-number">4.</span> <span class="toc-text">只下载音频：最佳音质 + 嵌入封面 + 指定位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E2%80%9C%E6%9C%80%E4%BD%B3%E9%9F%B3%E8%B4%A8%E2%80%9D%E5%92%8C%E8%BD%AC%E7%A0%81"><span class="toc-number">5.</span> <span class="toc-text">关于“最佳音质”和转码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E6%92%AD%E6%94%BE%E5%88%97%E8%A1%A8%E6%88%96%E9%A2%91%E9%81%93"><span class="toc-number">6.</span> <span class="toc-text">下载播放列表或频道</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E5%AD%97%E5%B9%95%E5%B9%B6%E5%B5%8C%E5%85%A5%E8%A7%86%E9%A2%91"><span class="toc-number">7.</span> <span class="toc-text">下载字幕并嵌入视频</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%90%86%E3%80%81Cookies-%E5%92%8C%E9%99%90%E9%80%9F"><span class="toc-number">8.</span> <span class="toc-text">代理、Cookies 和限速</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%BF%9D%E5%AD%98%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="toc-number">9.</span> <span class="toc-text">用配置文件保存常用参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">10.</span> <span class="toc-text">常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">11.</span> <span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/11/09/yt-dlp-%E4%B8%8B%E8%BD%BD%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8C%87%E5%8D%97/" title="yt-dlp 下载音视频指南"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="yt-dlp 下载音视频指南"/></a><div class="content"><a class="title" href="/2026/11/09/yt-dlp-%E4%B8%8B%E8%BD%BD%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8C%87%E5%8D%97/" title="yt-dlp 下载音视频指南">yt-dlp 下载音视频指南</a><time datetime="2026-11-09T05:50:09.000Z" title="发表于 2026-11-09 13:50:09">2026-11-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/11/08/Cloudflare-WARP-%E4%B8%8A%E6%89%8B%E6%8C%87%E5%8D%97%EF%BC%9A%E5%8A%A0%E5%AF%86%E4%BD%A0%E7%9A%84%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5/" title="Cloudflare WARP 上手指南：加密你的网络连接"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cloudflare WARP 上手指南：加密你的网络连接"/></a><div class="content"><a class="title" href="/2026/11/08/Cloudflare-WARP-%E4%B8%8A%E6%89%8B%E6%8C%87%E5%8D%97%EF%BC%9A%E5%8A%A0%E5%AF%86%E4%BD%A0%E7%9A%84%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5/" title="Cloudflare WARP 上手指南：加密你的网络连接">Cloudflare WARP 上手指南：加密你的网络连接</a><time datetime="2026-11-08T04:58:14.000Z" title="发表于 2026-11-08 12:58:14">2026-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/31/%E7%BD%91%E7%BA%BF%E7%9B%B4%E8%BF%9E%E4%B8%A4%E5%8F%B0%E7%94%B5%E8%84%91%E4%BC%A0%E6%96%87%E4%BB%B6%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%97/" title="网线直连两台电脑传文件完整指南"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="网线直连两台电脑传文件完整指南"/></a><div class="content"><a class="title" href="/2026/10/31/%E7%BD%91%E7%BA%BF%E7%9B%B4%E8%BF%9E%E4%B8%A4%E5%8F%B0%E7%94%B5%E8%84%91%E4%BC%A0%E6%96%87%E4%BB%B6%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%97/" title="网线直连两台电脑传文件完整指南">网线直连两台电脑传文件完整指南</a><time datetime="2026-10-31T02:17:14.000Z" title="发表于 2026-10-31 10:17:14">2026-10-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/26/WSL2-%E5%AE%89%E8%A3%85%E4%B8%8E%E5%8D%B8%E8%BD%BD%E6%8C%87%E5%8D%97/" title="WSL2 安装与卸载指南"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="WSL2 安装与卸载指南"/></a><div class="content"><a class="title" href="/2026/10/26/WSL2-%E5%AE%89%E8%A3%85%E4%B8%8E%E5%8D%B8%E8%BD%BD%E6%8C%87%E5%8D%97/" title="WSL2 安装与卸载指南">WSL2 安装与卸载指南</a><time datetime="2026-10-26T07:45:53.000Z" title="发表于 2026-10-26 15:45:53">2026-10-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/26/WSL2-%E6%89%8B%E5%8A%A8%E5%8E%8B%E7%BC%A9%E8%99%9A%E6%8B%9F%E7%A3%81%E7%9B%98%E9%87%8A%E6%94%BE%E7%A9%BA%E9%97%B4%E6%8C%87%E5%8D%97/" title="WSL2 手动压缩虚拟磁盘释放空间指南"><img src="/img/GBC8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="WSL2 手动压缩虚拟磁盘释放空间指南"/></a><div class="content"><a class="title" href="/2026/10/26/WSL2-%E6%89%8B%E5%8A%A8%E5%8E%8B%E7%BC%A9%E8%99%9A%E6%8B%9F%E7%A3%81%E7%9B%98%E9%87%8A%E6%94%BE%E7%A9%BA%E9%97%B4%E6%8C%87%E5%8D%97/" title="WSL2 手动压缩虚拟磁盘释放空间指南">WSL2 手动压缩虚拟磁盘释放空间指南</a><time datetime="2026-10-26T01:47:12.000Z" title="发表于 2026-10-26 09:47:12">2026-10-26</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/GBC8.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By Edward Wang</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div><div class="footer_custom_text">Hi, welcome to my <a href="https://edwardlwang.github.io/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/js/tw_cn.js?v=5.7.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.innerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    // Clean up previous event listeners and pending frames
+    if (wrap.__mermaidAbortController) {
+      wrap.__mermaidAbortController.abort()
+      if (wrap.__mermaidRafId) cancelAnimationFrame(wrap.__mermaidRafId)
+    }
+    const ac = new AbortController()
+    wrap.__mermaidAbortController = ac
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+    // Disable default gestures to prevent scroll chaining and pinch-zoom penetration in Chrome
+    svg.style.touchAction = 'none'
+
+    // Cache BoundingClientRect, throttled on scroll to reduce reflow
+    let cachedRect = svg.getBoundingClientRect()
+    let rectDirty = false
+    const markRectDirty = () => { rectDirty = true }
+    window.addEventListener('resize', markRectDirty, { signal: ac.signal })
+    window.addEventListener('scroll', markRectDirty, { signal: ac.signal, capture: true })
+    const getRect = () => {
+      if (rectDirty) {
+        cachedRect = svg.getBoundingClientRect()
+        rectDirty = false
+      }
+      return cachedRect
+    }
+
+    // Precompute clamp bounds from initial viewBox
+    const minW = initVb[2] * 0.1
+    const maxW = initVb[2] * 10
+    const minH = initVb[3] * 0.1
+    const maxH = initVb[3] * 10
+    const clampVb = vb => {
+      const out = vb.slice()
+      out[2] = clamp(out[2], minW, maxW)
+      out[3] = clamp(out[3], minH, maxH)
+      return out
+    }
+
+    // Throttle DOM updates using requestAnimationFrame
+    let pendingVb = null
+    let rafId = null
+    const applyVb = () => {
+      if (pendingVb) {
+        wrap.__mermaidCurViewBox = pendingVb
+        setSvgViewBox(svg, pendingVb)
+        pendingVb = null
+      }
+      rafId = null
+      wrap.__mermaidRafId = null
+    }
+    const setCurVb = vb => {
+      pendingVb = clampVb(vb)
+      if (!rafId) {
+        rafId = requestAnimationFrame(applyVb)
+        wrap.__mermaidRafId = rafId
+      }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      lastPointerX: 0,
+      lastPointerY: 0
+    }
+
+    const onPointerDown = e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      const curVb = wrap.__mermaidCurViewBox
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (state.pointers.size === 1) {
+        state.startVb = curVb.slice()
+        state.lastPointerX = e.clientX
+        state.lastPointerY = e.clientY
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = curVb.slice()
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = state.pointers.values().next().value
+        const dxClient = p.x - state.lastPointerX
+        const dyClient = p.y - state.lastPointerY
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+        const dx = dxClient * (curVb[2] / rect.width)
+        const dy = dyClient * (curVb[3] / rect.height)
+        setCurVb([curVb[0] - dx, curVb[1] - dy, curVb[2], curVb[3]])
+        return
+      }
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const px = curVb[0] + (cx - rect.left) * (curVb[2] / rect.width)
+        const py = curVb[1] + (cy - rect.top) * (curVb[3] / rect.height)
+        setCurVb(zoomAtPoint(state.startVb, factor, px, py))
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      // Release PointerCapture to avoid event capture anomalies
+      if (svg.hasPointerCapture && svg.hasPointerCapture(e.pointerId)) {
+        svg.releasePointerCapture(e.pointerId)
+      }
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+      } else if (state.pointers.size === 1) {
+        const p = state.pointers.values().next().value
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+      }
+    }
+
+    const onWheel = e => {
+      // Prevent event bubbling from triggering external scroll
+      e.preventDefault()
+      e.stopPropagation()
+      // Normalize deltaY across deltaMode (Chrome uses pixels, Safari uses lines)
+      let delta = e.deltaY
+      if (e.deltaMode === 1) delta *= 16
+      else if (e.deltaMode === 2) delta *= 400
+
+      // Continuous zoom factor: smoother than fixed 1.1/0.9 steps
+      const zoomFactor = Math.pow(1.001, delta)
+
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      const px = curVb[0] + (e.clientX - rect.left) * (curVb[2] / rect.width)
+      const py = curVb[1] + (e.clientY - rect.top) * (curVb[3] / rect.height)
+      setCurVb(zoomAtPoint(curVb, zoomFactor, px, py))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (init) setCurVb(init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown, { signal: ac.signal })
+    svg.addEventListener('pointermove', onPointerMove, { signal: ac.signal })
+    svg.addEventListener('pointerup', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('pointercancel', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('wheel', onWheel, { passive: false, signal: ac.signal })
+    svg.addEventListener('dblclick', onDblClick, { signal: ac.signal })
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      // Clean up event listeners before removing old SVG
+      if (item.__mermaidAbortController) {
+        item.__mermaidAbortController.abort()
+      }
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      let config = {}
+      try {
+        config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      } catch (e) {
+        console.warn('[mermaid] failed to parse dataset.config:', e)
+      }
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (true) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+      const handleError = err => {
+        console.error(`[mermaid] render failed for block #${index}:`, err)
+        const errorEl = document.createElement('div')
+        errorEl.className = 'mermaid-error'
+        errorEl.textContent = `Mermaid render error: ${err.message || err}`
+        mermaidSrc.insertAdjacentElement('afterend', errorEl)
+      }
+
+      try {
+        const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+        // mermaid v9 and v10 compatibility
+        if (typeof renderFn === 'string') {
+          renderMermaid(renderFn)
+        } else {
+          renderFn.then(({ svg }) => renderMermaid(svg)).catch(handleError)
+        }
+      } catch (err) {
+        handleError(err)
+      }
+    })
+  }
+
+  const codeToMermaid = $article => {
+    const codeMermaidEle = $article.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    const $article = document.getElementById('article-container')
+    if (!$article) return
+
+    if (true) codeToMermaid($article)
+    const $mermaid = $article.querySelectorAll('.mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const abcjsInit = () => {
+    const abcjsFn = () => {
+      const $article = document.getElementById("article-container")
+      if (!$article || $article.querySelector(".hbe-container")) return
+
+      setTimeout(() => {
+        const sheets = $article.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.textContent, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object" && ABCJS !== null) {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs@6.6.4/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script></div><script id="canvas_nest" defer="defer" color="0,0,0" opacity="1" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
